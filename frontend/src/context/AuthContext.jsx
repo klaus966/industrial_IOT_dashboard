@@ -21,18 +21,22 @@ export const AuthProvider = ({ children }) => {
     }, [token]);
 
     const login = async (email, password) => {
+        // Prepare form data for OAuth2 compatible endpoint
         const formData = new FormData();
         formData.append('username', email);
         formData.append('password', password);
 
         try {
+            // Send login request
             const res = await client.post('/auth/token', formData, {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
             });
+
+            // Extract and save token
             const accessToken = res.data.access_token;
             localStorage.setItem('token', accessToken);
             setToken(accessToken);
-            setUser({ email }); // Simplified
+            setUser({ email });
             return true;
         } catch (err) {
             console.error("Login failed", err);

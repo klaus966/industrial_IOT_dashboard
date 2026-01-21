@@ -13,7 +13,8 @@ export default function Dashboard() {
 
     const fetchData = async () => {
         try {
-            // In a real app, optimize loops
+            // --- 1. Fetch Data ---
+            // Fetch both static machine lists and real-time sensor data in parallel
             const [machinesRes, dataRes] = await Promise.all([
                 client.get('/machines'),
                 client.get('/data/latest')
@@ -24,7 +25,9 @@ export default function Dashboard() {
             const machineList = machinesRes.data;
             const dataList = dataRes.data;
 
-            // Transform data list to map by machine_id
+            // --- 2. Data Mapping ---
+            // Create a lookup map: { machine_id: sensor_data }
+            // This allows O(1) access when rendering cards instead of searching the array every time
             const dataMap = {};
             dataList.forEach(d => {
                 dataMap[d.machine_id] = d;
@@ -33,17 +36,20 @@ export default function Dashboard() {
             setMachines(machineList);
             setLatestData(dataMap);
 
-            // Calc Stats
+            // --- 3. Compute Statistics ---
+            // Calculate totals for the overview cards
             const total = machineList.length;
             const critical = machineList.filter(m => m.status === 'Critical' || m.status === 'Danger').length;
             const healthy = machineList.filter(m => m.status === 'Healthy').length;
             setStats({ total, critical, healthy });
 
-            // Check for alarms
+            // --- 4. Alarm System ---
+            // Trigger toast notifications if any machine is in a bad state
             machineList.forEach(m => {
+                // Prevent duplicate toasts by using machineId in the toast ID
                 if (m.status === 'Critical') {
                     toast.error(`CRITICAL ALARM: ${m.name} is in Critical state!`, {
-                        id: `critical-${m.id}`, // Unique ID prevents duplicates
+                        id: `critical-${m.id}`,
                         duration: 5000,
                         icon: '🚨'
                     });
@@ -62,9 +68,13 @@ export default function Dashboard() {
         }
     };
 
+    // --- 5. Polling Loop ---
+    // Poll the backend every 2 seconds to get real-time data
     useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 2000); // Poll every 2s
+        fetchData(); // Initial fetch
+        const interval = setInterval(fetchData, 2000);
+
+        // Cleanup function prevents memory leaks when component unmounts
         return () => clearInterval(interval);
     }, []);
 
