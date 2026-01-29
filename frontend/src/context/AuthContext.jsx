@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         // Prepare form data for OAuth2 compatible endpoint
-        const formData = new FormData();
+        const formData = new URLSearchParams();
         formData.append('username', email);
         formData.append('password', password);
 

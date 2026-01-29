@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from . import database
@@ -38,6 +38,17 @@ app.add_middleware(
     allow_methods=["*"], # Allow all methods (GET, POST, PUT, DELETE)
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    with open("requests.log", "a") as f:
+        f.write(f"\nRequest: {request.method} {request.url}\n")
+        f.write("--- Headers ---\n")
+        for name, value in request.headers.items():
+            f.write(f"{name}: {value}\n")
+        f.write("----------------\n")
+    response = await call_next(request)
+    return response
 
 # --- Router Registration ---
 # Include routes from different modules

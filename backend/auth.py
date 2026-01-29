@@ -41,9 +41,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
+            print("Debug Auth: Email is None in payload")
             raise credentials_exception
         token_data = schemas.TokenData(email=email)
-    except JWTError:
+    except JWTError as e:
+        print(f"Debug Auth: JWT Error: {e}")
+        print(f"Debug Auth: Token received: {token}")
         raise credentials_exception
         
     user = db.query(models.User).filter(models.User.email == token_data.email).first()

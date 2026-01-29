@@ -64,7 +64,9 @@ export default function Dashboard() {
 
         } catch (err) {
             console.error("Error fetching dashboard data", err);
-            setError("Unable to connect to the server or database. Please check your connection.");
+            const status = err.response ? err.response.status : 'Unknown';
+            const detail = err.response ? JSON.stringify(err.response.data) : err.message;
+            setError(`Connection Error (${status}): ${detail}`);
         }
     };
 

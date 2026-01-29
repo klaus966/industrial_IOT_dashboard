@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # SQLite for now, can switch to PostgreSQL
-SQLALCHEMY_DATABASE_URL = "sqlite:///./industrial.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///../industrial.db"
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
 engine = create_engine(
